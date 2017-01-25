@@ -5,10 +5,11 @@ public class Board {
 	private final int width;
 	private final int length;
 	private final List<Square> board = new ArrayList<>();
+	private int players = 0;
 	
 	//Rep invariant:
 	// 	width and length are > 0
-	//
+	//	players >= 0 
 	//  a square returned by getSquare(x,y)
 	//  must have as its neighbours
 	//  only the squares returned by 
@@ -153,6 +154,72 @@ public class Board {
 	}
 	
 	
+	/**
+	 * Adds a new player to the game
+	 */
+	public void addPlayer(){
+		synchronized(this){
+			this.players++;
+			checkRep();
+		}
+	}
+	
+	/**
+	 * 
+	 * @return number of players playing the game
+	 */
+	public int getNumPlayers(){
+		synchronized(this){
+			return this.players;
+		}
+	}
+	
+	
+	/**
+	 * A compound method
+	 * that updates the number of players and returns the updated number
+	 * of players playing the game
+	 * @return the number of players in the game
+	 */
+	public int addAndGetPlayers(){
+		synchronized(this){
+			this.addPlayer();
+			return this.getNumPlayers();
+		}
+	}
+	
+	/**
+	 * Requires that players > 0
+	 * Deletes a player from the game
+	 */
+	public void deletePlayer(){
+		synchronized(this){
+			this.players--;
+			checkRep();
+		}
+	}
+	
+	
+	/**
+	 * A compound method that calls the dig method with the 
+	 * effect that if the board is modified
+	 * and a bomb is found, the number of players is reduced by one
+	 * since the player who dug that square can no longer play
+	 * @param x - the x-coordinate of the square to be modified
+	 * @param y - the y-coordinate of the square to be modified
+	 * @return BoardState representing result of modification
+	 */
+	public BoardState digAndDelete(int x, int y){
+		synchronized(this){
+			BoardState state = this.dig(x, y);
+			if(state.getBombFound()){
+				this.deletePlayer();
+			}
+			return state;
+		}
+	}
+	
+	
 	
 	/**
 	 * 
@@ -177,17 +244,11 @@ public class Board {
 	 * is modified in accordance with the protocol, otherwise has no effect
 	 * @param x - the x-coordinate of the square to be modified
 	 * @param y - the y-coordinate of the square to be modified
-	 * @return true if x and y are valid coordinates and the square contains a bomb, otherwise false
+	 * @return BoardState representing result of modification
 	 */
-	public boolean handleDig(int x, int y){
+	public BoardState dig(int x, int y){
 		synchronized(this){
-			if(this.withinBounds(x, y)){
-				Square square = this.getSquare(x, y);
-				boolean bomb = square.hasBomb();
-				square.dig();
-				return bomb;
-			}
-			return false;
+			return modify(x,y,BoardModification.DIG);
 		}
 	}
 	
@@ -197,12 +258,11 @@ public class Board {
 	 * if x and y represent a valid board position, otherwise has no effect
 	 * @param x - the x-coordinate of the square to be modified
 	 * @param y - the y-coordinate of the square to be modified
+	 * @return BoardState representing result of modification
 	 */
-	public void handleFlag(int x, int y){
+	public BoardState flag(int x, int y){
 		synchronized (this) {
-			if (this.withinBounds(x, y)) {
-				this.getSquare(x, y).flag();
-			}
+			return modify(x,y,BoardModification.FLAG);
 		}
 	}
 	
@@ -212,13 +272,47 @@ public class Board {
 	 * if x and y represent a valid board position, otherwise has no effect
 	 * @param x - the x-coordinate of the square to be modified
 	 * @param y - the y-coordinate of the square to be modified
+	 * @return BoardState representing result of modification
 	 */
-	public void handleDeflag(int x, int y){
+	public BoardState deflag(int x, int y){
 		synchronized (this) {
-			if (this.withinBounds(x, y)) {
-				this.getSquare(x, y).deflag();
-			}
+			return modify(x,y,BoardModification.DEFLAG);
 		}
+	}
+	
+	
+	/**
+	 * Executes the modification specified by the enum mod with the effect that
+	 * the square with coordinates x and y is modified in accordance with the protocol
+	 * if x and y represent a valid board position, otherwise has no effect
+	 * @param x - the x-coordinate of the square to be modified
+	 * @param y - the y-coordinate of the square to be modified
+	 * @param mod - the type of modification to apply 
+	 * @return
+	 */
+	public BoardState modify(int x, int y, BoardModification mod){
+		synchronized (this) {
+			BoardState state = new BoardState();
+			if (this.withinBounds(x, y)) {
+				Square square=this.getSquare(x, y);
+				switch(mod){
+				case DIG: {
+					state.setBombFound(square.hasBomb());
+					square.dig();
+				}
+				case FLAG: {
+					square.flag();
+				}
+				case DEFLAG: {
+					square.deflag();
+				}
+				//default needed?
+				}
+			}
+			state.setBoardString(this.toString());
+			return state;
+		}
+
 	}
 	
 	

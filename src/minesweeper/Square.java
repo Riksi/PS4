@@ -161,6 +161,7 @@ public class Square {
 		return this.neighbours.contains(square);
 	}
 	
+	
 	@Override
 	public String toString(){
 		return "";

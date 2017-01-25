@@ -375,22 +375,28 @@ public class MinesweeperBoardTest {
  		Board b7 = new Board(8,2,bombStatuses);
  		assertEquals(8,b7.getWidth());
  		assertEquals(2,b7.getLength());
+ 		
+	}
+	
+	@Test
+	public void TestBoardPlayerFunctions(){
+		Board b = new Board();
+		assertEquals(0,b.getNumPlayers());
+		b.addPlayer();
+		assertEquals(1,b.getNumPlayers());
+		assertEquals(2,b.addAndGetPlayers());
+		assertEquals(2,b.getNumPlayers());
 	}
 	
 	@Test
 	public void TestBoardState(){
-		//Default  bombFound is false
-		//setBombFound can only make it true
 		
 		BoardState state = new BoardState();
 		assertEquals(false,state.getBombFound());
-		state.setBombFound();
+		state.setBombFound(false);
+		assertEquals(false,state.getBombFound());
+		state.setBombFound(true);
 		assertEquals(true,state.getBombFound());
-		state.setBombFound();
-		assertEquals(true,state.getBombFound());
-		
-		
-		
 	}
 	
 }

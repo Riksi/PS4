@@ -4,8 +4,8 @@ public class BoardState {
 	private boolean bombFound = false;
 	private String boardString;
 	
-	public void setBombFound(){
-		bombFound = true;
+	public void setBombFound(boolean bombFound){
+		this.bombFound = bombFound;
 	}
 	
 	public boolean getBombFound(){
