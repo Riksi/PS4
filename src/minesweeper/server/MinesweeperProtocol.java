@@ -1,7 +1,5 @@
 package minesweeper.server;
 
-import java.net.*;
-import java.io.*;
 import minesweeper.*;
 
 public class MinesweeperProtocol {

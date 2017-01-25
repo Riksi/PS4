@@ -2,20 +2,16 @@ package minesweeper.server;
 
 import java.net.*;
 import java.io.*;
-import minesweeper.*;
 
 public class MinesweeperServerThread implements Runnable{
 	private Socket socket; 
-	private final Board board;
-	private final boolean debug;
+	MinesweeperProtocol mp;
 	
-	public MinesweeperServerThread(Socket socket,Board board, boolean debug){
+	public MinesweeperServerThread(Socket socket, MinesweeperProtocol mp){
 		this.socket = socket;
-		this.board = board;
-		this.debug = debug;
+		this.mp = mp;
+		
 	}
-	
-	
 	
 	/**
 	 * Handles connection from a single client by reading from input stream in
@@ -27,8 +23,8 @@ public class MinesweeperServerThread implements Runnable{
     public void handleConnection(PrintWriter out, BufferedReader in) throws IOException {
         // Method has been designed so that it can be tested without using a real socket 
         try {
-        	for (String line = in.readLine(); line != null; line = in.readLine()) {
-        		String output = handleRequest(line);
+        	for (String line = in.readLine(); line != null; line = in.readLine()){
+        		String output = mp.processInput(line);
         		if(output != null) {
         			out.println(output);
         		}

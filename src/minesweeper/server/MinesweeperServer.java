@@ -42,7 +42,7 @@ public class MinesweeperServer {
             	// the call to accept inside will block until a client connects
             	// then a new thread will be created to handle the client 
             	new Thread(new MinesweeperServerThread(this.serverSocket.accept(),
-            			this.board, debug)).start();
+            			new MinesweeperProtocol(this.board,debug))).start();
             }
             
             catch (IOException e) {
